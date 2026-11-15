@@ -108,12 +108,6 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
           <div>Ad #{ad.adNumber}</div>
           <div>{ad.views || 0} views</div>
         </dl>
-        {typeof ad.lat === "number" && typeof ad.lng === "number" && (
-          <section className="mt-6">
-            <h2 className="mb-3 text-lg font-semibold">Location on map</h2>
-            <MapView lat={ad.lat} lng={ad.lng} className="h-72" />
-          </section>
-        )}
         {ad.attributes && Object.keys(ad.attributes).length > 0 && (
           <table className="mt-6 w-full overflow-hidden rounded-2xl border text-sm">
             <tbody>
@@ -134,7 +128,7 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
           </div>
         )}
       </div>
-      <aside className="h-fit rounded-2xl border bg-card p-5 shadow-soft lg:sticky lg:top-28">
+      <aside className="h-fit space-y-4 lg:sticky lg:top-28"><div className="rounded-2xl border bg-card p-5 shadow-soft">
         <h2 className="text-lg font-semibold">Contact details</h2>
         <p className="mt-1 text-sm text-muted-foreground">{ad.contactName}{ad.isPrivateSeller ? " · Private seller" : ""}</p>
         <ul className="mt-4 space-y-3 text-sm">
@@ -146,6 +140,13 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
           )}
           <li className="flex items-center gap-3 rounded-xl border px-3 py-2.5"><MapPin className="h-4 w-4 shrink-0 text-primary" />{ad.location ? `${ad.location.city}, ${ad.location.state}` : ad.city}</li>
         </ul>
+        </div>
+        {typeof ad.lat === "number" && typeof ad.lng === "number" && (
+          <div className="rounded-2xl border bg-card p-5 shadow-soft">
+            <h2 className="mb-3 text-lg font-semibold">Location on map</h2>
+            <MapView lat={ad.lat} lng={ad.lng} className="h-64" />
+          </div>
+        )}
       </aside>
       {lightbox && images[index] && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-6" onClick={() => setLightbox(false)}>
