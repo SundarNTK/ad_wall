@@ -341,7 +341,7 @@ async function main() {
     const existing = await Ad.find({ adNumber: { $gte: 10001, $lte: 10040 } }).populate("category", "slug");
     for (const ad of existing) {
       const slug = (ad.category as { slug?: string } | null)?.slug || "community";
-      ad.images = sampleImages(slug, Number(ad.adNumber) - 10001);
+      ad.set("images", sampleImages(slug, Number(ad.adNumber) - 10001));
       await ad.save();
     }
     console.log(`Updated image URLs on ${existing.length} sample ads`);
