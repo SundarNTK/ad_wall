@@ -25,6 +25,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: { optimizePackageImports: ["framer-motion", "recharts"] },
   serverExternalPackages: ["mongoose", "bcryptjs", "nodemailer", "cloudinary"],
   images: {
     remotePatterns: [

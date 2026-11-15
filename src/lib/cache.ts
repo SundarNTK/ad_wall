@@ -13,6 +13,7 @@ export async function cached<T>(key: string, ttlMs: number, load: () => Promise<
   if (hit && Date.now() - hit.at < ttlMs) return hit.value as T;
   const pending = flight.get(key);
   if (pending) return pending as Promise<T>;
+  if (store.size > 400) store.clear();
   const generation = g.__memoGen ?? 0;
   const promise = load()
     .then((value) => {

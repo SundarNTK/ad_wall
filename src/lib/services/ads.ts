@@ -8,6 +8,7 @@ import { DAILY_AD_LIMIT } from "@/lib/constants";
 import { sanitizeText } from "@/lib/sanitize";
 import { sendPlainEmail } from "@/lib/mailer";
 import { escapeRegex, slugify } from "@/lib/utils";
+import { bustCache } from "@/lib/cache";
 import { presentAd } from "@/lib/services/listings";
 import type { SessionUser } from "@/lib/auth";
 
@@ -125,6 +126,7 @@ export async function saveAd(user: SessionUser, body: unknown, adId?: string): P
       ad.expiresAt = new Date(Date.now() + payload.durationDays * 86400000);
     }
     await ad.save();
+    bustCache();
     return { status: 200, message: moderation ? "Ad updated and sent for review" : "Ad updated", data: { id: String(ad._id), slug: ad.slug } };
   }
   const adNumber = await nextAdNumber();
@@ -136,6 +138,7 @@ export async function saveAd(user: SessionUser, body: unknown, adId?: string): P
     status: moderation ? "pending" : "live",
     expiresAt: moderation ? undefined : new Date(Date.now() + payload.durationDays * 86400000),
   });
+  bustCache();
   return { status: 201, message: moderation ? "Ad submitted for review" : "Your ad is live", data: { id: String(ad._id), slug: ad.slug, status: ad.status } };
 }
 
@@ -152,6 +155,7 @@ export async function renewAd(userId: string, adId: string, republish: boolean):
     ad.expiresAt = new Date(base + (ad.durationDays || 180) * 86400000);
     ad.renewedAt = new Date();
     await ad.save();
+    bustCache();
     return { status: 200, message: "Ad renewed" };
   }
   if (ad.status !== "expired") return { status: 400, message: "Only expired ads can be republished" };
@@ -159,6 +163,7 @@ export async function renewAd(userId: string, adId: string, republish: boolean):
   ad.expiresAt = new Date(Date.now() + (ad.durationDays || 180) * 86400000);
   ad.renewedAt = new Date();
   await ad.save();
+  bustCache();
   return { status: 200, message: moderation ? "Ad sent for review" : "Ad republished" };
 }
 
@@ -167,6 +172,7 @@ export async function ownerDeleteAd(userId: string, adId: string): Promise<Resul
   if (!ad) return { status: 404, message: "Ad not found" };
   ad.status = "deleted";
   await ad.save();
+  bustCache();
   return { status: 200, message: "Ad deleted" };
 }
 

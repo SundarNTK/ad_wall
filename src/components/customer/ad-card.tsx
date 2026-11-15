@@ -12,7 +12,7 @@ export function AdCard({ ad, index = 0 }: { ad: PublicAd; index?: number }) {
     <motion.article initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: Math.min(index, 8) * 0.04 }} whileHover={{ y: -4 }} className="overflow-hidden rounded-2xl border bg-card shadow-soft">
       <Link href={`/ad/${ad.slug}`} className="block">
         <div className="relative h-48 bg-muted">
-          {image ? <img src={image} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-sm text-muted-foreground">No photo</div>}
+          {image ? <img src={image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center text-sm text-muted-foreground">No photo</div>}
           {ad.isFeatured && <span className="absolute left-3 top-3 rounded-full bg-accent px-2 py-1 text-xs font-semibold text-accent-foreground">Featured</span>}
         </div>
         <div className="space-y-2 p-4">

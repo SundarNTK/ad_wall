@@ -68,6 +68,10 @@ export async function homeDirectory() {
 }
 
 export async function adjacentInCategory(ad: { _id: unknown; category: unknown; createdAt?: Date | string }) {
+  return cached(`adjacent:${String(ad._id)}`, 30_000, () => adjacentUncached(ad));
+}
+
+async function adjacentUncached(ad: { _id: unknown; category: unknown; createdAt?: Date | string }) {
   const categoryId = (ad.category as { _id?: unknown })?._id || ad.category;
   const createdAt = ad.createdAt ? new Date(ad.createdAt) : new Date();
   const base = { status: "live", category: categoryId, _id: { $ne: ad._id } };
@@ -110,9 +114,47 @@ function num(value?: string) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+type CatalogMaps = {
+  catMap: Map<string, Record<string, unknown>>;
+  subMap: Map<string, Record<string, unknown>>;
+  locMap: Map<string, Record<string, unknown>>;
+};
+
+/** Category, subcategory and location records from the 60-second cache, keyed by id. */
+async function catalogMaps(): Promise<CatalogMaps> {
+  const [cats, subsAll, locs] = await Promise.all([
+    cached("all-cats", 60_000, () => Category.find().select("name slug icon").lean()),
+    cached("all-subs", 60_000, () => SubCategory.find().select("name slug fields category").lean()),
+    cached("all-locs", 60_000, () => Location.find().select("city state country slug").lean()),
+  ]);
+  return {
+    catMap: new Map(cats.map((item) => [String(item._id), item as unknown as Record<string, unknown>])),
+    subMap: new Map(subsAll.map((item) => [String(item._id), item as unknown as Record<string, unknown>])),
+    locMap: new Map(locs.map((item) => [String(item._id), item as unknown as Record<string, unknown>])),
+  };
+}
+
+/** Replaces the id fields of an ad row with the matching catalog records (what populate used to do, without extra queries). */
+function withNames<T extends object>(row: T, maps: CatalogMaps) {
+  const source = row as Record<string, unknown>;
+  const idOf = (value: unknown) => String((value as { _id?: unknown })?._id || value);
+  return {
+    ...source,
+    category: maps.catMap.get(idOf(source.category)) || source.category,
+    subCategory: maps.subMap.get(idOf(source.subCategory)) || source.subCategory,
+    location: maps.locMap.get(idOf(source.location)) || source.location,
+  } as unknown as Omit<T, "category" | "subCategory" | "location"> & { category: unknown; subCategory: unknown; location: unknown };
+}
+
 let lastExpirySweep = 0;
 
 export async function searchAds(params: ListParams, includeAll = false) {
+  // Public listings repeat a lot (same category, same page), so they are cached for a few seconds. Admin lists are always live.
+  if (!includeAll) return cached(`list:${JSON.stringify(params)}`, 20_000, () => searchAdsUncached(params, false));
+  return searchAdsUncached(params, true);
+}
+
+async function searchAdsUncached(params: ListParams, includeAll: boolean) {
   await dbConnect();
   // Mark overdue ads as expired at most once a minute instead of on every request.
   if (Date.now() - lastExpirySweep > 60_000) {
@@ -182,7 +224,7 @@ export async function searchAds(params: ListParams, includeAll = false) {
   const page = Math.max(1, num(params.page) || 1);
   const limit = includeAll ? ([10, 25, 50, 100].includes(Number(params.limit)) ? Number(params.limit) : 10) : 12;
   const sort: Record<string, 1 | -1> = params.sort === "price_asc" ? { price: 1 } : params.sort === "price_desc" ? { price: -1 } : { isFeatured: -1, createdAt: -1 };
-  const [total, rows, cats, subsAll, locs] = await Promise.all([
+  const [total, rows, maps] = await Promise.all([
     Ad.countDocuments(filter),
     Ad.find(filter)
       .sort(sort)
@@ -190,20 +232,9 @@ export async function searchAds(params: ListParams, includeAll = false) {
       .limit(limit)
       .populate(includeAll ? [{ path: "user", select: "name email" }] : [])
       .lean(),
-    // Names come from the cached catalog lists instead of a populate (saves a database round trip per page).
-    cached("all-cats", 60_000, () => Category.find().select("name slug icon").lean()),
-    cached("all-subs", 60_000, () => SubCategory.find().select("name slug fields category").lean()),
-    cached("all-locs", 60_000, () => Location.find().select("city state country slug").lean()),
+    catalogMaps(),
   ]);
-  const catMap = new Map(cats.map((item) => [String(item._id), item]));
-  const subMap = new Map(subsAll.map((item) => [String(item._id), item]));
-  const locMap = new Map(locs.map((item) => [String(item._id), item]));
-  const shaped = rows.map((row) => ({
-    ...row,
-    category: catMap.get(String(row.category)) || row.category,
-    subCategory: subMap.get(String(row.subCategory)) || row.subCategory,
-    location: locMap.get(String(row.location)) || row.location,
-  }));
+  const shaped = rows.map((row) => withNames(row, maps));
   return {
     items: shaped.map((row) => (includeAll ? { ...presentAd(row as never, true), owner: (row as { user?: unknown }).user || null } : presentAd(row as never))),
     total,
@@ -254,23 +285,19 @@ export function presentAd(ad: Record<string, unknown>, reveal = false) {
 
 export async function getAdBySlug(slug: string) {
   await dbConnect();
-  const ad = await Ad.findOne({ slug, status: { $in: ["live", "pending", "expired", "rejected"] } })
-    .populate("category", "name slug icon")
-    .populate("subCategory", "name slug fields")
-    .populate("location", "city state country slug")
-    .lean();
-  return ad;
+  const [ad, maps] = await Promise.all([Ad.findOne({ slug, status: { $in: ["live", "pending", "expired", "rejected"] } }).lean(), catalogMaps()]);
+  return ad ? withNames(ad, maps) : null;
 }
 
 export async function similarAds(ad: { _id: unknown; subCategory: unknown }) {
-  const rows = await Ad.find({ status: "live", subCategory: (ad.subCategory as { _id?: unknown })._id || ad.subCategory, _id: { $ne: ad._id } })
-    .sort({ createdAt: -1 })
-    .limit(4)
-    .populate("category", "name slug icon")
-    .populate("subCategory", "name slug")
-    .populate("location", "city state slug")
-    .lean();
-  return rows.map((row) => presentAd(row as Record<string, unknown>));
+  const subId = String((ad.subCategory as { _id?: unknown })?._id || ad.subCategory);
+  return cached(`similar:${String(ad._id)}`, 30_000, async () => {
+    const [rows, maps] = await Promise.all([
+      Ad.find({ status: "live", expiresAt: { $gt: new Date() }, subCategory: subId, _id: { $ne: ad._id } }).sort({ createdAt: -1 }).limit(4).lean(),
+      catalogMaps(),
+    ]);
+    return rows.map((row) => presentAd(withNames(row, maps)));
+  });
 }
 
 export async function locationSuggestions(q: string) {

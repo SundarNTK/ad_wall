@@ -12,6 +12,7 @@ import { sendLinkEmail, sendPlainEmail } from "@/lib/mailer";
 import { sanitizeText } from "@/lib/sanitize";
 import { audit } from "@/lib/audit";
 import { escapeRegex } from "@/lib/utils";
+import { bustCache } from "@/lib/cache";
 
 async function activeSuperadmins(exceptId?: string) {
   return User.countDocuments({
@@ -129,6 +130,7 @@ export async function moderateAd(actor: SessionUser, id: string, action: string,
   } else if (action === "unfeature") ad.isFeatured = false;
   else return { status: 400, message: "Unknown action" };
   await ad.save();
+  bustCache();
   await audit(actor.id, `ad_${action}`, String(ad._id), { title: ad.title }, ip);
   return { status: 200, message: "Ad updated" };
 }

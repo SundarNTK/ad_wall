@@ -16,7 +16,7 @@ export function CategoryRail({ ads, categoryName }: { ads: PublicAd[]; categoryN
     <section className="mb-8 grid gap-4 rounded-2xl border bg-card p-4 shadow-soft md:grid-cols-[240px_1fr] md:items-center">
       <Link href={`/ad/${ad.slug}`} className="block overflow-hidden rounded-xl bg-muted">
         {ad.images?.[0]?.url ? (
-          <img src={ad.images[0].url} alt="" className="h-40 w-full object-cover" />
+          <img src={ad.images[0].url} alt="" loading="lazy" decoding="async" className="h-40 w-full object-cover" />
         ) : (
           <div className="grid h-40 place-items-center text-sm text-muted-foreground">No photo</div>
         )}

@@ -1,4 +1,5 @@
 import { Footer, Header } from "@/components/customer/shell";
+import { NavProgress } from "@/components/customer/nav-progress";
 import { activeCategories, activeLocations, getSettings } from "@/lib/services/listings";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   }
   return (
     <div>
+      <NavProgress />
       <Header siteName={siteName} categories={categories} locations={locations} />
       <main>{children}</main>
       <Footer siteName={siteName} />
