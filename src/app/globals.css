@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 226 45% 97%;
+  --foreground: 230 35% 14%;
+  --card: 0 0% 100%;
+  --muted: 226 32% 95%;
+  --muted-foreground: 226 12% 42%;
+  --border: 226 24% 90%;
+  --primary: 252 86% 63%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 152 62% 36%;
+  --accent-foreground: 0 0% 100%;
+  --danger: 0 72% 51%;
+  --ring: 252 86% 63%;
+
+  /* Admin theme: AdWall indigo, light */
+  --h-50: 244 245 255; --h-100: 232 234 255; --h-200: 211 215 255; --h-300: 176 183 251; --h-400: 133 144 246;
+  --h-500: 99 102 241; --h-600: 79 70 229; --h-700: 67 56 202; --h-800: 55 48 163; --h-900: 46 42 133; --h-950: 27 24 86;
+  --a-brand: 67 56 202; --a-surface: 255 255 255; --a-bg: 243 245 252; --a-ink: 17 24 39; --a-mute: 92 104 128;
+  --a-grid: #e3e6f8; --a-axis: #5c6880; --a-line: #4f46e5; --a-bar: #6366f1;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 41% 11%;
+  --muted: 217 33% 16%;
+  --muted-foreground: 215 20% 75%;
+  --border: 217 33% 20%;
+  --primary: 239 84% 70%;
+  --primary-foreground: 222 47% 8%;
+  --accent: 172 66% 50%;
+  --accent-foreground: 222 47% 8%;
+  --danger: 0 84% 67%;
+  --ring: 239 84% 70%;
+
+  /* Admin theme: dark */
+  --h-50: 27 30 62; --h-100: 35 39 78; --h-200: 50 55 104; --h-300: 72 80 142; --h-400: 129 140 248;
+  --h-500: 129 140 248; --h-600: 94 96 240; --h-700: 79 70 229; --h-800: 67 56 202; --h-900: 46 42 133; --h-950: 12 14 34;
+  --a-brand: 165 180 252; --a-surface: 20 23 48; --a-bg: 10 12 26; --a-ink: 229 231 245; --a-mute: 154 163 191;
+  --a-grid: #2b3060; --a-axis: #9aa3bf; --a-line: #818cf8; --a-bar: #818cf8;
+}
+
+* { border-color: hsl(var(--border)); }
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  min-height: 100vh;
+}
+
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.dark .shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent); background-size: 200% 100%; }
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { animation: none; }
+}
+
+.admin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--h-300)) transparent;
+}
+.admin-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.admin-scroll::-webkit-scrollbar-track { background: transparent; }
+.admin-scroll::-webkit-scrollbar-thumb {
+  background: rgb(var(--h-300));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.admin-scroll::-webkit-scrollbar-thumb:hover { background: rgb(var(--h-400)); background-clip: padding-box; }
+
+/* Maps (Leaflet) */
+.leaflet-container { font-family: inherit; background: #0b1020; }
+.adwall-pin { background: none; border: 0; filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.5)); }
+.leaflet-bar { border: 0 !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 8px 22px -8px rgba(0, 0, 0, 0.55) !important; }
+.leaflet-bar a { width: 34px !important; height: 34px !important; line-height: 34px !important; background: rgba(255, 255, 255, 0.92) !important; color: #312e81 !important; backdrop-filter: blur(6px); }
+.leaflet-bar a:hover { background: #ffffff !important; color: #4f46e5 !important; }
+.leaflet-control-attribution { background: rgba(0, 0, 0, 0.5) !important; color: #e5e7eb !important; font-size: 10px !important; border-top-left-radius: 8px; }
+.leaflet-control-attribution a { color: #c7d2fe !important; }
