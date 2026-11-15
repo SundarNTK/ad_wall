@@ -23,7 +23,8 @@ export function Header({ siteName, categories, locations }: { siteName: string; 
   const [menu, setMenu] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
 
   useEffect(() => {
     api<{ user: SessionUser }>("/api/auth/me").then((result) => setUser(result.success ? result.data?.user || null : null));
@@ -69,7 +70,7 @@ export function Header({ siteName, categories, locations }: { siteName: string; 
           <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-2.5 text-sm font-semibold hover:bg-muted">
             <Home className="h-4 w-4" /> Home
           </Link>
-          <button aria-label="Toggle color theme" className="grid h-10 w-10 place-items-center rounded-full border bg-card" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+          <button aria-label="Toggle color theme" className="grid h-10 w-10 place-items-center rounded-full border bg-card" onClick={() => setTheme(isDark ? "light" : "dark")}>
             <Sun className="hidden h-4 w-4 dark:block" />
             <Moon className="h-4 w-4 dark:hidden" />
           </button>
@@ -103,9 +104,15 @@ export function Header({ siteName, categories, locations }: { siteName: string; 
             </>
           )}
         </div>
-        <button className="ml-auto rounded-full border p-2 md:hidden" aria-label="Open menu" onClick={() => setOpen(true)}>
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="ml-auto flex items-center gap-2 md:hidden">
+          <button aria-label="Toggle color theme" className="grid h-9 w-9 place-items-center rounded-full border bg-card" onClick={() => setTheme(isDark ? "light" : "dark")}>
+            <Sun className="hidden h-4 w-4 dark:block" />
+            <Moon className="h-4 w-4 dark:hidden" />
+          </button>
+          <button className="rounded-full border p-2" aria-label="Open menu" onClick={() => setOpen(true)}>
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </div>
       <form action="/search" className="mx-auto flex max-w-7xl gap-2 px-4 pb-3 md:hidden">
         <input name="q" aria-label="Search ads" placeholder="Search for..." className="min-w-0 flex-1 rounded-full border bg-card px-4 py-2 text-sm outline-none" />
