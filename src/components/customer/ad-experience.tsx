@@ -19,6 +19,10 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
   const [reportOpen, setReportOpen] = useState(false);
   const [types, setTypes] = useState<{ key: string; label: string }[]>([]);
   const images = ad.images?.length ? ad.images : [];
+  // Older ads have no pin of their own, so fall back to the centre of their city.
+  const ownPin = typeof ad.lat === "number" && typeof ad.lng === "number";
+  const mapLat = ownPin ? ad.lat : ad.location?.lat;
+  const mapLng = ownPin ? ad.lng : ad.location?.lng;
 
   useEffect(() => {
     api("/api/view/" + ad.slug, { method: "POST" });
@@ -141,10 +145,11 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
           <li className="flex items-center gap-3 rounded-xl border px-3 py-2.5"><MapPin className="h-4 w-4 shrink-0 text-primary" />{ad.location ? `${ad.location.city}, ${ad.location.state}` : ad.city}</li>
         </ul>
         </div>
-        {typeof ad.lat === "number" && typeof ad.lng === "number" && (
+        {typeof mapLat === "number" && typeof mapLng === "number" && (
           <div className="rounded-2xl border bg-card p-5 shadow-soft">
             <h2 className="mb-3 text-lg font-semibold">Location on map</h2>
-            <MapView lat={ad.lat} lng={ad.lng} className="h-64" />
+            <MapView lat={mapLat} lng={mapLng} zoom={ownPin ? 16 : 12} className="h-64" />
+            {!ownPin && <p className="mt-2 text-xs text-muted-foreground">Approximate area: {ad.location?.city}</p>}
           </div>
         )}
       </aside>

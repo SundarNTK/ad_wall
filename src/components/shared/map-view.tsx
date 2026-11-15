@@ -6,7 +6,7 @@ import { ExternalLink } from "lucide-react";
 import { addSatellite, loadLeaflet, pinIcon } from "@/components/shared/map-core";
 
 /** Read-only satellite map with the pin an ad owner chose. */
-export function MapView({ lat, lng, className = "h-64" }: { lat: number; lng: number; className?: string }) {
+export function MapView({ lat, lng, className = "h-64", zoom = 16 }: { lat: number; lng: number; className?: string; zoom?: number }) {
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export function MapView({ lat, lng, className = "h-64" }: { lat: number; lng: nu
     let cancelled = false;
     loadLeaflet().then((L) => {
       if (cancelled || !box.current) return;
-      map = L.map(box.current, { center: [lat, lng], zoom: 16, scrollWheelZoom: false, attributionControl: true });
+      map = L.map(box.current, { center: [lat, lng], zoom, scrollWheelZoom: false, attributionControl: true });
       addSatellite(L, map);
       L.marker([lat, lng], { icon: pinIcon(L), keyboard: false }).addTo(map);
       setTimeout(() => map?.invalidateSize(), 250);
@@ -23,7 +23,7 @@ export function MapView({ lat, lng, className = "h-64" }: { lat: number; lng: nu
       cancelled = true;
       map?.remove();
     };
-  }, [lat, lng]);
+  }, [lat, lng, zoom]);
 
   return (
     <div>

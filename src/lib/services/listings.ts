@@ -125,7 +125,7 @@ async function catalogMaps(): Promise<CatalogMaps> {
   const [cats, subsAll, locs] = await Promise.all([
     cached("all-cats", 60_000, () => Category.find().select("name slug icon").lean()),
     cached("all-subs", 60_000, () => SubCategory.find().select("name slug fields category").lean()),
-    cached("all-locs", 60_000, () => Location.find().select("city state country slug").lean()),
+    cached("all-locs", 60_000, () => Location.find().select("city state country slug lat lng").lean()),
   ]);
   return {
     catMap: new Map(cats.map((item) => [String(item._id), item as unknown as Record<string, unknown>])),
@@ -246,7 +246,7 @@ async function searchAdsUncached(params: ListParams, includeAll: boolean) {
 export function presentAd(ad: Record<string, unknown>, reveal = false, withContact = false) {
   const category = ad.category as { _id?: unknown; name?: string; slug?: string; icon?: string } | undefined;
   const sub = ad.subCategory as { _id?: unknown; name?: string; slug?: string; fields?: unknown } | undefined;
-  const location = ad.location as { _id?: unknown; city?: string; state?: string; country?: string; slug?: string } | undefined;
+  const location = ad.location as { _id?: unknown; city?: string; state?: string; country?: string; slug?: string; lat?: number; lng?: number } | undefined;
   const showPhone = Boolean(ad.showPhone);
   return {
     id: String(ad._id),
@@ -279,7 +279,7 @@ export function presentAd(ad: Record<string, unknown>, reveal = false, withConta
     userId: ad.user ? String((ad.user as { _id?: unknown })._id || ad.user) : undefined,
     category: category?.name ? { id: String(category._id), name: category.name, slug: category.slug, icon: category.icon } : null,
     subCategory: sub?.name ? { id: String(sub._id), name: sub.name, slug: sub.slug, fields: sub.fields || [] } : null,
-    location: location?.city ? { id: String(location._id), city: location.city, state: location.state, country: location.country, slug: location.slug } : null,
+    location: location?.city ? { id: String(location._id), city: location.city, state: location.state, country: location.country, slug: location.slug, lat: location.lat || null, lng: location.lng || null } : null,
   };
 }
 

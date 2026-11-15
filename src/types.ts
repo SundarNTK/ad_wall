@@ -38,7 +38,7 @@ export type PublicAd = {
   userId?: string;
   category?: { id: string; name: string; slug: string; icon?: string } | null;
   subCategory?: { id: string; name: string; slug: string; fields?: FieldDef[] } | null;
-  location?: { id: string; city: string; state: string; country?: string; slug: string } | null;
+  location?: { id: string; city: string; state: string; country?: string; slug: string; lat?: number | null; lng?: number | null } | null;
 };
 
 export type SessionUser = {
