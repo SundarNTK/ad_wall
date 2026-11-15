@@ -429,7 +429,7 @@ export function PostWizard({ editId }: { editId?: string }) {
                 <Field label="Contact name"><input value={draft.contactName} onChange={(event) => patch({ contactName: event.target.value })} className={fieldClass} /></Field>
                 <Field label="Phone"><input value={draft.contactPhone} onChange={(event) => patch({ contactPhone: event.target.value })} className={fieldClass} /></Field>
               </div>
-              <Field label="Contact email, kept private"><input value={draft.contactEmail} onChange={(event) => patch({ contactEmail: event.target.value })} className={fieldClass} /></Field>
+              <Field label="Contact email (shown on the ad)"><input value={draft.contactEmail} onChange={(event) => patch({ contactEmail: event.target.value })} className={fieldClass} /></Field>
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={draft.showPhone} onChange={(event) => patch({ showPhone: event.target.checked })} /> Show phone on the ad</label>
               <Field label="Location">
                 <Dropdown

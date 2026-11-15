@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "@/components/shared/feedback";
-import { ChevronLeft, ChevronRight, Flag, Heart, Share2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag, Heart, Mail, MapPin, Phone, Share2 } from "lucide-react";
 import { api, priceLabel, when } from "@/lib/client";
 import { AdCard } from "@/components/customer/ad-card";
 import type { PublicAd } from "@/types";
@@ -16,7 +16,6 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [favorite, setFavorite] = useState(saved);
-  const [phone, setPhone] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [types, setTypes] = useState<{ key: string; label: string }[]>([]);
   const images = ad.images?.length ? ad.images : [];
@@ -25,15 +24,6 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
     api("/api/view/" + ad.slug, { method: "POST" });
     api<{ reportTypes: { key: string; label: string }[] }>("/api/meta").then((result) => setTypes(result.data?.reportTypes || []));
   }, [ad.slug]);
-
-  async function sendMessage(formData: FormData) {
-    const result = await api(`/api/ads/${ad.id}/contact`, {
-      method: "POST",
-      body: JSON.stringify({ fromName: formData.get("fromName"), fromEmail: formData.get("fromEmail"), body: formData.get("body"), website: formData.get("website") }),
-    });
-    if (!result.success) toast.error(result.message);
-    else toast.success(result.message);
-  }
 
   async function sendReport(formData: FormData) {
     const result = await api(`/api/ads/${ad.id}/report`, {
@@ -145,19 +135,17 @@ export function AdExperience({ ad, similar, saved, neighbors }: { ad: PublicAd; 
         )}
       </div>
       <aside className="h-fit rounded-2xl border bg-card p-5 shadow-soft lg:sticky lg:top-28">
-        <h2 className="text-lg font-semibold">Contact seller</h2>
+        <h2 className="text-lg font-semibold">Contact details</h2>
         <p className="mt-1 text-sm text-muted-foreground">{ad.contactName}{ad.isPrivateSeller ? " · Private seller" : ""}</p>
-        {ad.showPhone && ad.contactPhone && (
-          <button className="mt-3 w-full rounded-full border py-2 text-sm font-semibold" onClick={() => setPhone(true)}>{phone ? ad.contactPhone : "Show phone"}</button>
-        )}
-        <form action={sendMessage} className="mt-4 space-y-3">
-          <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="absolute -left-[9999px]" />
-          <input name="fromName" required placeholder="Your name" className="w-full rounded-xl border bg-background px-3 py-2" />
-          <input name="fromEmail" type="email" required placeholder="Your email" className="w-full rounded-xl border bg-background px-3 py-2" />
-          <textarea name="body" required minLength={10} placeholder="Message" className="min-h-28 w-full rounded-xl border bg-background px-3 py-2" />
-          <button className="w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-primary-foreground">Send message</button>
-        </form>
-        <p className="mt-3 text-xs text-muted-foreground">The seller’s email stays hidden. We relay your message.</p>
+        <ul className="mt-4 space-y-3 text-sm">
+          {ad.contactEmail && (
+            <li><a href={`mailto:${ad.contactEmail}?subject=${encodeURIComponent("Enquiry: " + ad.title)}`} className="flex items-center gap-3 rounded-xl border px-3 py-2.5 font-medium hover:bg-muted"><Mail className="h-4 w-4 shrink-0 text-primary" /><span className="break-all">{ad.contactEmail}</span></a></li>
+          )}
+          {ad.showPhone && ad.contactPhone && (
+            <li><a href={`tel:${ad.contactPhone}`} className="flex items-center gap-3 rounded-xl border px-3 py-2.5 font-medium hover:bg-muted"><Phone className="h-4 w-4 shrink-0 text-primary" />{ad.contactPhone}</a></li>
+          )}
+          <li className="flex items-center gap-3 rounded-xl border px-3 py-2.5"><MapPin className="h-4 w-4 shrink-0 text-primary" />{ad.location ? `${ad.location.city}, ${ad.location.state}` : ad.city}</li>
+        </ul>
       </aside>
       {lightbox && images[index] && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-6" onClick={() => setLightbox(false)}>

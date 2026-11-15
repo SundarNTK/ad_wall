@@ -243,7 +243,7 @@ async function searchAdsUncached(params: ListParams, includeAll: boolean) {
   };
 }
 
-export function presentAd(ad: Record<string, unknown>, reveal = false) {
+export function presentAd(ad: Record<string, unknown>, reveal = false, withContact = false) {
   const category = ad.category as { _id?: unknown; name?: string; slug?: string; icon?: string } | undefined;
   const sub = ad.subCategory as { _id?: unknown; name?: string; slug?: string; fields?: unknown } | undefined;
   const location = ad.location as { _id?: unknown; city?: string; state?: string; country?: string; slug?: string } | undefined;
@@ -259,7 +259,7 @@ export function presentAd(ad: Record<string, unknown>, reveal = false) {
     attributes: ad.attributes || {},
     images: ad.images || [],
     contactName: ad.contactName,
-    contactEmail: reveal ? ad.contactEmail : undefined,
+    contactEmail: reveal || withContact ? ad.contactEmail : undefined,
     contactPhone: reveal || showPhone ? ad.contactPhone : "",
     showPhone,
     city: ad.city,

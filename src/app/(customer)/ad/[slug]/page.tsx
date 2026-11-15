@@ -29,7 +29,7 @@ export default async function AdPage({ params }: { params: Promise<{ slug: strin
   const { slug } = await params;
   const ad = await getAdBySlug(slug);
   if (!ad || ad.status !== "live" || (ad.expiresAt && new Date(ad.expiresAt).getTime() < Date.now())) notFound();
-  const view = presentAd(ad as unknown as Record<string, unknown>) as PublicAd;
+  const view = presentAd(ad as unknown as Record<string, unknown>, false, true) as PublicAd;
   const [related, session, neighbors] = await Promise.all([similarAds(ad), getSession("customer"), adjacentInCategory(ad)]);
   const saved = session ? (await favoriteIds(session.id)).includes(view.id) : false;
   const jsonLd = {
