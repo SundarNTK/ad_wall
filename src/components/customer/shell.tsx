@@ -66,6 +66,9 @@ export function Header({ siteName, categories, locations }: { siteName: string; 
           </button>
         </form>
         <div className="ml-auto hidden items-center gap-2 md:flex">
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-2.5 text-sm font-semibold hover:bg-muted">
+            <Home className="h-4 w-4" /> Home
+          </Link>
           <button aria-label="Toggle color theme" className="grid h-10 w-10 place-items-center rounded-full border bg-card" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
             <Sun className="hidden h-4 w-4 dark:block" />
             <Moon className="h-4 w-4 dark:hidden" />
@@ -117,6 +120,7 @@ export function Header({ siteName, categories, locations }: { siteName: string; 
                 <button aria-label="Close menu" onClick={() => setOpen(false)}><X /></button>
               </div>
               <div className="grid gap-1">
+                <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 font-semibold"><Home className="h-4 w-4" /> Home</Link>
                 <Link href="/post" onClick={() => setOpen(false)} className="rounded-full bg-accent px-3 py-2 text-center font-semibold text-accent-foreground">Post a free ad</Link>
                 {user ? (
                   <>
